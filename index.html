@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vip Experiência IA — Fale com a gente</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: rgba(255,255,255,0.08);
+    --accent: #c8f542;
+    --accent-dim: rgba(200,245,66,0.12);
+    --text: #f0f0ee;
+    --muted: rgba(240,240,238,0.45);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200,245,66,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 2.5rem;
+    opacity: 0.8;
+  }
+
+  .spinner-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .ring {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    border-top-color: var(--accent);
+    animation: spin 0.9s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .ring-inner {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: spin 0.9s linear infinite reverse;
+  }
+
+  .wa-icon {
+    width: 26px;
+    height: 26px;
+    fill: var(--accent);
+    animation: spin 0.9s linear infinite;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+  }
+
+  p.sub {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  .name-badge {
+    display: inline-block;
+    background: var(--accent-dim);
+    border: 1px solid rgba(200,245,66,0.25);
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 6px 20px;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+    letter-spacing: 0.03em;
+    min-width: 140px;
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 15px 24px;
+    background: var(--accent);
+    color: #0a0a0a;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-bottom: 0.75rem;
+  }
+
+  .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn:active { transform: scale(0.98); }
+
+  .footer-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1.5rem;
+    line-height: 1.6;
+  }
+
+  /* Estado: sucesso */
+  .success-icon {
+    display: none;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--accent-dim);
+    border: 1px solid rgba(200,245,66,0.25);
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+  }
+
+  .success-icon svg {
+    width: 32px;
+    height: 32px;
+    stroke: var(--accent);
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="logo">Vip Experiência IA · Wendell & Christian</div>
+
+  <div class="spinner-wrap" id="spinner">
+    <div class="ring">
+      <div class="ring-inner">
+        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+          <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.11 1.523 5.84L0 24l6.338-1.498A11.952 11.952 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.006-1.374l-.36-.214-3.724.879.934-3.613-.236-.37A9.818 9.818 0 1 1 12 21.818z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div id="success-icon" class="success-icon">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+
+  <h1 id="title">Conectando você ao time&hellip;</h1>
+  <p class="sub" id="subtitle">Estamos te direcionando para o consultor disponível agora. Aguarde um instante.</p>
+
+  <div class="name-badge" id="name-badge">—</div>
+
+  <a class="btn" id="wa-btn" href="#" target="_blank" rel="noopener">
+    Abrir WhatsApp agora
+  </a>
+
+  <p class="footer-note" id="footer-note">
+    Clicando novamente neste link você será<br>direcionado para o próximo consultor.
+  </p>
+</div>
+
+<script>
+  // ─── CONFIGURAÇÃO ───────────────────────────────────────────────
+  const CONTACTS = [
+    { name: "Mateus",  phone: "5511968826237" },
+    { name: "Karita",  phone: "5562995263819" },
+    { name: "Nicolly", phone: "5511978754080" },
+    { name: "Derek",   phone: "5511978111850" },
+    { name: "Liz",     phone: "5511941424638" }
+  ];
+
+  const MSG = "Olá, tudo bem? Preciso de ajuda com o Vip Experiência IA do Wendell Carvalho & Christian Barbosa";
+  // ────────────────────────────────────────────────────────────────
+
+  const KEY = "vip_ia_idx";
+
+  function getNext() {
+    let idx = parseInt(localStorage.getItem(KEY) || "0", 10);
+    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) idx = 0;
+    const contact = CONTACTS[idx];
+    localStorage.setItem(KEY, (idx + 1) % CONTACTS.length);
+    return contact;
+  }
+
+  function buildWAUrl(phone, msg) {
+    return "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+  }
+
+  window.addEventListener('DOMContentLoaded', function () {
+    const contact = getNext();
+    const url = buildWAUrl(contact.phone, MSG);
+
+    document.getElementById('name-badge').textContent = contact.name;
+    document.getElementById('wa-btn').href = url;
+
+    // Auto-redirect após 1.8s
+    setTimeout(function () {
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('success-icon').style.display = 'flex';
+      document.getElementById('title').textContent = 'Tudo certo!';
+      document.getElementById('subtitle').textContent =
+        'Você está sendo conectado com ' + contact.name + '. Se não abrir automaticamente, clique no botão abaixo.';
+      window.location.href = url;
+    }, 1800);
+  });
+</script>
+</body>
+</html>
