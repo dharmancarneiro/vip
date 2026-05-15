@@ -231,11 +231,11 @@
 <script>
   // ─── CONFIGURAÇÃO ───────────────────────────────────────────────
   const CONTACTS = [
-    { name: "Mateus",  phone: "5511968826237" },
     { name: "Karita",  phone: "5562995263819" },
-    { name: "Nicolly", phone: "5511978754080" },
     { name: "Derek",   phone: "5511978111850" },
-    { name: "Liz",     phone: "5511941424638" }
+    { name: "Nicolly", phone: "5511978754080" },
+    { name: "Liz",     phone: "5511941424638" },
+    { name: "Mateus",  phone: "5511968826237" }
   ];
 
   const MSG = "Olá, tudo bem? Preciso de ajuda com o Vip Experiência IA do Wendell Carvalho & Christian Barbosa";
@@ -243,24 +243,38 @@
 
   const KEY = "vip_ia_idx";
 
-  function getNext() {
+  function getCurrentContact() {
+    // Pega o índice atual do localStorage
     let idx = parseInt(localStorage.getItem(KEY) || "0", 10);
-    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) idx = 0;
-    const contact = CONTACTS[idx];
-    localStorage.setItem(KEY, (idx + 1) % CONTACTS.length);
-    return contact;
+    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) {
+      idx = 0;
+    }
+    return { contact: CONTACTS[idx], index: idx };
+  }
+
+  function advanceToNext() {
+    // Avança para o próximo vendedor
+    let currentIdx = parseInt(localStorage.getItem(KEY) || "0", 10);
+    if (isNaN(currentIdx) || currentIdx < 0 || currentIdx >= CONTACTS.length) {
+      currentIdx = 0;
+    }
+    const nextIdx = (currentIdx + 1) % CONTACTS.length;
+    localStorage.setItem(KEY, nextIdx.toString());
   }
 
   function buildWAUrl(phone, msg) {
     return "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
   }
 
-  window.addEventListener('DOMContentLoaded', function () {
-    const contact = getNext();
-    const url = buildWAUrl(contact.phone, MSG);
-
+  function updateInterface(contact) {
     document.getElementById('name-badge').textContent = contact.name;
-    document.getElementById('wa-btn').href = url;
+    document.getElementById('wa-btn').href = buildWAUrl(contact.phone, MSG);
+  }
+
+  // Ao carregar a página
+  window.addEventListener('DOMContentLoaded', function () {
+    const { contact } = getCurrentContact();
+    updateInterface(contact);
 
     // Auto-redirect após 1.8s
     setTimeout(function () {
@@ -269,8 +283,21 @@
       document.getElementById('title').textContent = 'Tudo certo!';
       document.getElementById('subtitle').textContent =
         'Você está sendo conectado com ' + contact.name + '. Se não abrir automaticamente, clique no botão abaixo.';
-      window.location.href = url;
+      
+      // AVANÇA PARA O PRÓXIMO vendedor quando carrega a página
+      advanceToNext();
+      
+      // Abre o WhatsApp
+      window.location.href = buildWAUrl(contact.phone, MSG);
     }, 1800);
+  });
+
+  // Quando clicar no botão (caso o auto-redirect não funcione)
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('wa-btn').addEventListener('click', function(e) {
+      // Só avança se não foi pelo auto-redirect
+      // (o auto-redirect já avança automaticamente)
+    });
   });
 </script>
 </body>
