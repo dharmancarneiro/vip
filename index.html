@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formação Gestor GAIA — Fale com a gente</title>
+<title>Vip Experiência IA — Fale com a gente</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Inter:wght@300;400;500&display=swap');
 
@@ -197,7 +197,7 @@
 <body>
 
 <div class="card" id="card">
-  <div class="logo">Formação Gestor GAIA · Christian Barbosa</div>
+  <div class="logo">Vip Experiência IA · Wendell & Christian</div>
 
   <div class="spinner-wrap" id="spinner">
     <div class="ring">
@@ -215,33 +215,66 @@
   </div>
 
   <h1 id="title">Conectando você ao time&hellip;</h1>
-  <p class="sub" id="subtitle">Estamos te direcionando para o nosso consultor especializado. Aguarde um instante.</p>
+  <p class="sub" id="subtitle">Estamos te direcionando para o consultor disponível agora. Aguarde um instante.</p>
 
-  <div class="name-badge" id="name-badge">Atendimento GAIA</div>
+  <div class="name-badge" id="name-badge">—</div>
 
   <a class="btn" id="wa-btn" href="#" target="_blank" rel="noopener">
     Abrir WhatsApp agora
   </a>
 
   <p class="footer-note" id="footer-note">
-    Tire suas dúvidas sobre a Formação Gestor GAIA<br>e conclua sua inscrição agora mesmo.
+    Clicando novamente neste link você será<br>direcionado para o próximo consultor.
   </p>
 </div>
 
 <script>
   // ─── CONFIGURAÇÃO ───────────────────────────────────────────────
-  const PHONE = "5511519747419";
-  const MSG = "Olá tudo bem? Quero ajuda para concluir minha inscrição para a Formação Gestor GAIA - Gestor de Automação e Inteligência Artificial";
+  const CONTACTS = [
+    { name: "Karita",  phone: "5562995263819" },
+    { name: "Derek",   phone: "5511978111850" },
+    { name: "Nicolly", phone: "5511978754080" },
+    { name: "Liz",     phone: "5511941424638" },
+    { name: "Mateus",  phone: "5511968826237" }
+  ];
+
+  const MSG = "Olá, tudo bem? Preciso de ajuda com o Vip Experiência IA do Wendell Carvalho & Christian Barbosa";
   // ────────────────────────────────────────────────────────────────
+
+  const KEY = "vip_ia_idx";
+
+  function getCurrentContact() {
+    // Pega o índice atual do localStorage
+    let idx = parseInt(localStorage.getItem(KEY) || "0", 10);
+    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) {
+      idx = 0;
+    }
+    return { contact: CONTACTS[idx], index: idx };
+  }
+
+  function advanceToNext() {
+    // Avança para o próximo vendedor
+    let currentIdx = parseInt(localStorage.getItem(KEY) || "0", 10);
+    if (isNaN(currentIdx) || currentIdx < 0 || currentIdx >= CONTACTS.length) {
+      currentIdx = 0;
+    }
+    const nextIdx = (currentIdx + 1) % CONTACTS.length;
+    localStorage.setItem(KEY, nextIdx.toString());
+  }
 
   function buildWAUrl(phone, msg) {
     return "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
   }
 
+  function updateInterface(contact) {
+    document.getElementById('name-badge').textContent = contact.name;
+    document.getElementById('wa-btn').href = buildWAUrl(contact.phone, MSG);
+  }
+
   // Ao carregar a página
   window.addEventListener('DOMContentLoaded', function () {
-    const whatsappUrl = buildWAUrl(PHONE, MSG);
-    document.getElementById('wa-btn').href = whatsappUrl;
+    const { contact } = getCurrentContact();
+    updateInterface(contact);
 
     // Auto-redirect após 1.8s
     setTimeout(function () {
@@ -249,11 +282,22 @@
       document.getElementById('success-icon').style.display = 'flex';
       document.getElementById('title').textContent = 'Tudo certo!';
       document.getElementById('subtitle').textContent =
-        'Você está sendo conectado com nosso atendimento especializado. Se não abrir automaticamente, clique no botão abaixo.';
+        'Você está sendo conectado com ' + contact.name + '. Se não abrir automaticamente, clique no botão abaixo.';
+      
+      // AVANÇA PARA O PRÓXIMO vendedor quando carrega a página
+      advanceToNext();
       
       // Abre o WhatsApp
-      window.location.href = whatsappUrl;
+      window.location.href = buildWAUrl(contact.phone, MSG);
     }, 1800);
+  });
+
+  // Quando clicar no botão (caso o auto-redirect não funcione)
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('wa-btn').addEventListener('click', function(e) {
+      // Só avança se não foi pelo auto-redirect
+      // (o auto-redirect já avança automaticamente)
+    });
   });
 </script>
 </body>
