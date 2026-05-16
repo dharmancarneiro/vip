@@ -170,7 +170,6 @@
     line-height: 1.6;
   }
 
-  /* Estado: sucesso */
   .success-icon {
     display: none;
     width: 72px;
@@ -230,12 +229,14 @@
 
 <script>
   // ─── CONFIGURAÇÃO ───────────────────────────────────────────────
+  // Contatos atualizados em 16/05/2025
   const CONTACTS = [
-    { name: "Karita",  phone: "5562995263819" },
-    { name: "Derek",   phone: "5511978111850" },
-    { name: "Nicolly", phone: "5511978754080" },
-    { name: "Liz",     phone: "5511941424638" },
-    { name: "Mateus",  phone: "5511968826237" }
+    { name: "Elidiane", phone: "5511992786359" },
+    { name: "Nicolly",  phone: "5511978754080" },
+    { name: "Liz",      phone: "5511968827711" },
+    { name: "Derek",    phone: "5511921046733" },
+    { name: "Karita",   phone: "5562995263819" },
+    { name: "Mateus",   phone: "5511968826237" }
   ];
 
   const MSG = "Olá, tudo bem? Preciso de ajuda com o Vip Experiência IA do Wendell Carvalho & Christian Barbosa";
@@ -243,61 +244,43 @@
 
   const KEY = "vip_ia_idx";
 
-  function getCurrentContact() {
-    // Pega o índice atual do localStorage
+  function getIndex() {
     let idx = parseInt(localStorage.getItem(KEY) || "0", 10);
-    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) {
-      idx = 0;
-    }
-    return { contact: CONTACTS[idx], index: idx };
+    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) idx = 0;
+    return idx;
   }
 
-  function advanceToNext() {
-    // Avança para o próximo vendedor
-    let currentIdx = parseInt(localStorage.getItem(KEY) || "0", 10);
-    if (isNaN(currentIdx) || currentIdx < 0 || currentIdx >= CONTACTS.length) {
-      currentIdx = 0;
-    }
-    const nextIdx = (currentIdx + 1) % CONTACTS.length;
-    localStorage.setItem(KEY, nextIdx.toString());
+  function advanceIndex() {
+    const next = (getIndex() + 1) % CONTACTS.length;
+    localStorage.setItem(KEY, next.toString());
   }
 
   function buildWAUrl(phone, msg) {
     return "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
   }
 
-  function updateInterface(contact) {
+  window.addEventListener('DOMContentLoaded', function () {
+    const idx     = getIndex();
+    const contact = CONTACTS[idx];
+
+    // Atualiza badge e botão com o contato atual
     document.getElementById('name-badge').textContent = contact.name;
     document.getElementById('wa-btn').href = buildWAUrl(contact.phone, MSG);
-  }
 
-  // Ao carregar a página
-  window.addEventListener('DOMContentLoaded', function () {
-    const { contact } = getCurrentContact();
-    updateInterface(contact);
+    // Avança índice IMEDIATAMENTE (antes do redirect) para garantir rotação
+    advanceIndex();
 
-    // Auto-redirect após 1.8s
+    // Após 1.8s → muda UI e redireciona
     setTimeout(function () {
       document.getElementById('spinner').style.display = 'none';
       document.getElementById('success-icon').style.display = 'flex';
       document.getElementById('title').textContent = 'Tudo certo!';
       document.getElementById('subtitle').textContent =
-        'Você está sendo conectado com ' + contact.name + '. Se não abrir automaticamente, clique no botão abaixo.';
-      
-      // AVANÇA PARA O PRÓXIMO vendedor quando carrega a página
-      advanceToNext();
-      
-      // Abre o WhatsApp
+        'Você está sendo conectado com ' + contact.name +
+        '. Se não abrir automaticamente, clique no botão abaixo.';
+
       window.location.href = buildWAUrl(contact.phone, MSG);
     }, 1800);
-  });
-
-  // Quando clicar no botão (caso o auto-redirect não funcione)
-  document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('wa-btn').addEventListener('click', function(e) {
-      // Só avança se não foi pelo auto-redirect
-      // (o auto-redirect já avança automaticamente)
-    });
   });
 </script>
 </body>
