@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Formação Gestor GAIA — Fale com a gente</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=Inter:wght@300;400;500&display=swap');
@@ -53,7 +56,8 @@
   .card::before {
     content: '';
     position: absolute;
-    top: 0; left: 50%;
+    top: 0;
+    left: 50%;
     transform: translateX(-50%);
     width: 60%;
     height: 1px;
@@ -137,9 +141,16 @@
     font-size: 15px;
     padding: 6px 20px;
     border-radius: 100px;
-    margin-bottom: 2rem;
+    margin-bottom: 0.5rem;
     letter-spacing: 0.03em;
     min-width: 140px;
+  }
+
+  .ticket {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.04em;
   }
 
   .btn {
@@ -201,7 +212,7 @@
   <div class="spinner-wrap" id="spinner">
     <div class="ring">
       <div class="ring-inner">
-        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="wa-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
           <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.11 1.523 5.84L0 24l6.338-1.498A11.952 11.952 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.006-1.374l-.36-.214-3.724.879.934-3.613-.236-.37A9.818 9.818 0 1 1 12 21.818z"/>
         </svg>
@@ -209,7 +220,7 @@
     </div>
   </div>
 
-  <div id="success-icon" class="success-icon">
+  <div id="success-icon" class="success-icon" aria-hidden="true">
     <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
   </div>
 
@@ -217,115 +228,210 @@
   <p class="sub" id="subtitle">Estamos te direcionando para o consultor disponível agora. Aguarde um instante.</p>
 
   <div class="name-badge" id="name-badge">—</div>
+  <div class="ticket" id="ticket"></div>
 
-  <a class="btn" id="wa-btn" href="#" target="_blank" rel="noopener">
+  <a class="btn" id="wa-btn" href="#" rel="noopener noreferrer">
     Abrir WhatsApp agora
   </a>
 
-  <p class="footer-note" id="footer-note">
+  <p class="footer-note">
     Cada novo clique neste link é direcionado<br>para o próximo consultor da fila.
   </p>
 </div>
 
 <script>
-  // ─── CONFIGURAÇÃO ───────────────────────────────────────────────
-  // Contatos atualizados em 16/05/2025
-  // Ordem de rotação: 1º Elidiane → 2º Nicolly → … → volta ao início
-  const CONTACTS = [
+(function () {
+  "use strict";
+
+  // ═══════════════════════════════════════════════════════════════
+  // CONFIGURAÇÃO — Fila circular global
+  // Ordem: 1 Elidiane → 2 Nicolly → 3 Liz → 4 Derek → 5 Karita → 6 Mateus → (recomeça)
+  // Telefones no formato internacional WhatsApp: 55 + DDD + número (só dígitos)
+  // ═══════════════════════════════════════════════════════════════
+  var CONTACTS = [
     { name: "Elidiane", phone: "5511992786359" },
     { name: "Nicolly",  phone: "5511978754080" },
-    { name: "Liz",      phone: "5511968827711" },
+    { name: "Liz",      phone: "5511941424638" }, // 11 94142-4638 (atualizado)
     { name: "Derek",    phone: "5511921046733" },
     { name: "Karita",   phone: "5562995263819" },
     { name: "Mateus",   phone: "5511968826237" }
   ];
 
-  const MSG = "Olá, tudo bem? Preciso de ajuda para fazer a minha Inscrição da Formação Gestor GAIA com o Wendell Carvalho & Christian Barbosa";
+  var MSG =
+    "Olá, tudo bem? Preciso de ajuda para fazer a minha Inscrição da Formação Gestor GAIA com o Wendell Carvalho & Christian Barbosa";
 
-  // Contador GLOBAL compartilhado (não depende do celular/navegador do visitante)
-  // Namespace único do projeto — não altere se quiser manter a sequência atual
-  const COUNTER_NS  = "gestor-gaia-rotacao";
-  const COUNTER_KEY = "consultores";
-  const LOCAL_KEY   = "vip_ia_idx";
-  // ────────────────────────────────────────────────────────────────
+  // Contador GLOBAL atômico (Abacus). Namespace v4 = fila limpa.
+  // Fila compartilhada na nuvem (não depende do aparelho do visitante).
+  // CounterAPI só como reserva (em paralelo pode repetir ticket).
+  var COUNTER_NS  = "gestor-gaia-fila-v4";
+  var COUNTER_KEY = "consultores";
+  var ANIM_MS     = 1600;
+  var FETCH_MS    = 4500;
+
+  var assigned = false;
+
+  function $(id) {
+    return document.getElementById(id);
+  }
 
   function buildWAUrl(phone, msg) {
     return "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
   }
 
-  // Fallback local (só se as APIs remotas falharem)
-  function nextLocalIndex() {
-    let idx = parseInt(localStorage.getItem(LOCAL_KEY) || "0", 10);
-    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) idx = 0;
-    localStorage.setItem(LOCAL_KEY, ((idx + 1) % CONTACTS.length).toString());
-    return idx;
+  function ticketToIndex(ticket) {
+    var n = CONTACTS.length;
+    var t = Number(ticket);
+    if (!Number.isFinite(t) || t < 1) return 0;
+    return (Math.floor(t) - 1) % n;
   }
 
-  // Pega o próximo índice da fila global (1º clique = 0, 2º = 1, …)
-  async function nextGlobalIndex() {
-    // 1) CounterAPI — contador compartilhado na nuvem
+  function fetchWithTimeout(url, ms) {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function () { ctrl.abort(); }, ms);
+    return fetch(url, {
+      method: "GET",
+      cache: "no-store",
+      mode: "cors",
+      credentials: "omit",
+      signal: ctrl.signal,
+      headers: {
+        "Cache-Control": "no-cache, no-store",
+        "Pragma": "no-cache"
+      }
+    }).finally(function () {
+      clearTimeout(timer);
+    });
+  }
+
+  /**
+   * Próximo ticket GLOBAL da fila (1, 2, 3, …).
+   * Abacus incrementa de forma atômica — cliques simultâneos recebem tickets diferentes.
+   */
+  async function nextTicket() {
+    var bust = Date.now() + "-" + Math.random().toString(36).slice(2, 10);
+
+    // 1) Principal: Abacus (atômico)
     try {
-      const res = await fetch(
-        "https://api.counterapi.dev/v1/" + COUNTER_NS + "/" + COUNTER_KEY + "/up",
-        { cache: "no-store" }
+      var res = await fetchWithTimeout(
+        "https://abacus.jasoncameron.dev/hit/" +
+          encodeURIComponent(COUNTER_NS) + "/" +
+          encodeURIComponent(COUNTER_KEY) +
+          "?t=" + encodeURIComponent(bust),
+        FETCH_MS
       );
       if (res.ok) {
-        const data = await res.json();
-        const count = Number(data.count);
-        if (Number.isFinite(count) && count > 0) {
-          return (count - 1) % CONTACTS.length;
+        var data = await res.json();
+        var value = Number(data && data.value);
+        if (Number.isFinite(value) && value >= 1) {
+          return { ticket: Math.floor(value), source: "abacus" };
         }
       }
-    } catch (e) { /* tenta fallback */ }
+    } catch (err) {
+      // tenta fallback
+    }
 
-    // 2) Abacus — segundo contador remoto
+    // 2) Reserva: CounterAPI (só se Abacus falhar), com cache-bust
     try {
-      const res = await fetch(
-        "https://abacus.jasoncameron.dev/hit/" + COUNTER_NS + "/" + COUNTER_KEY,
-        { cache: "no-store" }
+      var res2 = await fetchWithTimeout(
+        "https://api.counterapi.dev/v1/" +
+          encodeURIComponent(COUNTER_NS) + "/" +
+          encodeURIComponent(COUNTER_KEY) +
+          "/up?t=" + encodeURIComponent(bust),
+        FETCH_MS
       );
-      if (res.ok) {
-        const data = await res.json();
-        const count = Number(data.value);
-        if (Number.isFinite(count) && count > 0) {
-          return (count - 1) % CONTACTS.length;
+      if (res2.ok) {
+        var data2 = await res2.json();
+        var count = Number(data2 && data2.count);
+        if (Number.isFinite(count) && count >= 1) {
+          return { ticket: Math.floor(count), source: "counterapi" };
         }
       }
-    } catch (e) { /* tenta fallback local */ }
+    } catch (err2) {
+      // tenta fallback final
+    }
 
-    // 3) localStorage — só deste dispositivo
-    return nextLocalIndex();
+    // 3) Último recurso: distribui por tempo (não é fila perfeita, mas não trava no redirect)
+    var idx = Math.abs(Date.now()) % CONTACTS.length;
+    return { ticket: idx + 1, source: "fallback", idxOverride: idx };
   }
 
-  function showContact(contact) {
-    const url = buildWAUrl(contact.phone, MSG);
-    document.getElementById("name-badge").textContent = contact.name;
-    document.getElementById("wa-btn").href = url;
-    return url;
+  function applyUI(contact, ticket, url) {
+    $("name-badge").textContent = contact.name;
+    $("wa-btn").href = url;
+    $("ticket").textContent =
+      "Fila #" + ticket + " · " + (ticketToIndex(ticket) + 1) + "/" + CONTACTS.length;
   }
 
-  function finishAndRedirect(contact, url) {
-    document.getElementById("spinner").style.display = "none";
-    document.getElementById("success-icon").style.display = "flex";
-    document.getElementById("title").textContent = "Tudo certo!";
-    document.getElementById("subtitle").textContent =
+  function showSuccess(contact) {
+    $("spinner").style.display = "none";
+    $("success-icon").style.display = "flex";
+    $("title").textContent = "Tudo certo!";
+    $("subtitle").textContent =
       "Você está sendo conectado com " + contact.name +
       ". Se não abrir automaticamente, clique no botão abaixo.";
-    window.location.href = url;
   }
 
-  window.addEventListener("DOMContentLoaded", async function () {
-    const startedAt = Date.now();
-    const idx = await nextGlobalIndex();
-    const contact = CONTACTS[idx];
-    const url = showContact(contact);
+  function resetLoadingUI() {
+    $("spinner").style.display = "flex";
+    $("success-icon").style.display = "none";
+    $("title").textContent = "Conectando você ao time…";
+    $("subtitle").textContent =
+      "Estamos te direcionando para o consultor disponível agora. Aguarde um instante.";
+    $("name-badge").textContent = "—";
+    $("ticket").textContent = "";
+    $("wa-btn").href = "#";
+  }
 
-    // Garante ~1.8s de animação mesmo se a API responder rápido
-    const wait = Math.max(0, 1800 - (Date.now() - startedAt));
+  async function runAssignment() {
+    if (assigned) return;
+    assigned = true;
+
+    var startedAt = Date.now();
+    var result = await nextTicket();
+
+    var idx =
+      typeof result.idxOverride === "number"
+        ? result.idxOverride
+        : ticketToIndex(result.ticket);
+
+    // Proteção: índice sempre válido
+    if (idx < 0 || idx >= CONTACTS.length || !CONTACTS[idx]) {
+      idx = 0;
+    }
+
+    var contact = CONTACTS[idx];
+    var ticket = result.ticket;
+    var url = buildWAUrl(contact.phone, MSG);
+
+    applyUI(contact, ticket, url);
+
+    var wait = Math.max(0, ANIM_MS - (Date.now() - startedAt));
     setTimeout(function () {
-      finishAndRedirect(contact, url);
+      showSuccess(contact);
+      // replace evita voltar para a página de loading no histórico
+      window.location.replace(url);
     }, wait);
+  }
+
+  function boot() {
+    runAssignment();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
+  // WhatsApp / Safari às vezes restauram a página do cache ao voltar
+  window.addEventListener("pageshow", function (ev) {
+    if (ev.persisted) {
+      assigned = false;
+      resetLoadingUI();
+      runAssignment();
+    }
   });
+})();
 </script>
 </body>
 </html>
