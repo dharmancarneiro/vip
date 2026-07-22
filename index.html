@@ -223,13 +223,14 @@
   </a>
 
   <p class="footer-note" id="footer-note">
-    Clicando novamente neste link você será<br>direcionado para o próximo consultor.
+    Cada novo clique neste link é direcionado<br>para o próximo consultor da fila.
   </p>
 </div>
 
 <script>
   // ─── CONFIGURAÇÃO ───────────────────────────────────────────────
   // Contatos atualizados em 16/05/2025
+  // Ordem de rotação: 1º Elidiane → 2º Nicolly → … → volta ao início
   const CONTACTS = [
     { name: "Elidiane", phone: "5511992786359" },
     { name: "Nicolly",  phone: "5511978754080" },
@@ -240,47 +241,90 @@
   ];
 
   const MSG = "Olá, tudo bem? Preciso de ajuda para fazer a minha Inscrição da Formação Gestor GAIA com o Wendell Carvalho & Christian Barbosa";
+
+  // Contador GLOBAL compartilhado (não depende do celular/navegador do visitante)
+  // Namespace único do projeto — não altere se quiser manter a sequência atual
+  const COUNTER_NS  = "gestor-gaia-rotacao";
+  const COUNTER_KEY = "consultores";
+  const LOCAL_KEY   = "vip_ia_idx";
   // ────────────────────────────────────────────────────────────────
-
-  const KEY = "vip_ia_idx";
-
-  function getIndex() {
-    let idx = parseInt(localStorage.getItem(KEY) || "0", 10);
-    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) idx = 0;
-    return idx;
-  }
-
-  function advanceIndex() {
-    const next = (getIndex() + 1) % CONTACTS.length;
-    localStorage.setItem(KEY, next.toString());
-  }
 
   function buildWAUrl(phone, msg) {
     return "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
   }
 
-  window.addEventListener('DOMContentLoaded', function () {
-    const idx     = getIndex();
+  // Fallback local (só se as APIs remotas falharem)
+  function nextLocalIndex() {
+    let idx = parseInt(localStorage.getItem(LOCAL_KEY) || "0", 10);
+    if (isNaN(idx) || idx < 0 || idx >= CONTACTS.length) idx = 0;
+    localStorage.setItem(LOCAL_KEY, ((idx + 1) % CONTACTS.length).toString());
+    return idx;
+  }
+
+  // Pega o próximo índice da fila global (1º clique = 0, 2º = 1, …)
+  async function nextGlobalIndex() {
+    // 1) CounterAPI — contador compartilhado na nuvem
+    try {
+      const res = await fetch(
+        "https://api.counterapi.dev/v1/" + COUNTER_NS + "/" + COUNTER_KEY + "/up",
+        { cache: "no-store" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const count = Number(data.count);
+        if (Number.isFinite(count) && count > 0) {
+          return (count - 1) % CONTACTS.length;
+        }
+      }
+    } catch (e) { /* tenta fallback */ }
+
+    // 2) Abacus — segundo contador remoto
+    try {
+      const res = await fetch(
+        "https://abacus.jasoncameron.dev/hit/" + COUNTER_NS + "/" + COUNTER_KEY,
+        { cache: "no-store" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const count = Number(data.value);
+        if (Number.isFinite(count) && count > 0) {
+          return (count - 1) % CONTACTS.length;
+        }
+      }
+    } catch (e) { /* tenta fallback local */ }
+
+    // 3) localStorage — só deste dispositivo
+    return nextLocalIndex();
+  }
+
+  function showContact(contact) {
+    const url = buildWAUrl(contact.phone, MSG);
+    document.getElementById("name-badge").textContent = contact.name;
+    document.getElementById("wa-btn").href = url;
+    return url;
+  }
+
+  function finishAndRedirect(contact, url) {
+    document.getElementById("spinner").style.display = "none";
+    document.getElementById("success-icon").style.display = "flex";
+    document.getElementById("title").textContent = "Tudo certo!";
+    document.getElementById("subtitle").textContent =
+      "Você está sendo conectado com " + contact.name +
+      ". Se não abrir automaticamente, clique no botão abaixo.";
+    window.location.href = url;
+  }
+
+  window.addEventListener("DOMContentLoaded", async function () {
+    const startedAt = Date.now();
+    const idx = await nextGlobalIndex();
     const contact = CONTACTS[idx];
+    const url = showContact(contact);
 
-    // Atualiza badge e botão com o contato atual
-    document.getElementById('name-badge').textContent = contact.name;
-    document.getElementById('wa-btn').href = buildWAUrl(contact.phone, MSG);
-
-    // Avança índice IMEDIATAMENTE (antes do redirect) para garantir rotação
-    advanceIndex();
-
-    // Após 1.8s → muda UI e redireciona
+    // Garante ~1.8s de animação mesmo se a API responder rápido
+    const wait = Math.max(0, 1800 - (Date.now() - startedAt));
     setTimeout(function () {
-      document.getElementById('spinner').style.display = 'none';
-      document.getElementById('success-icon').style.display = 'flex';
-      document.getElementById('title').textContent = 'Tudo certo!';
-      document.getElementById('subtitle').textContent =
-        'Você está sendo conectado com ' + contact.name +
-        '. Se não abrir automaticamente, clique no botão abaixo.';
-
-      window.location.href = buildWAUrl(contact.phone, MSG);
-    }, 1800);
+      finishAndRedirect(contact, url);
+    }, wait);
   });
 </script>
 </body>
